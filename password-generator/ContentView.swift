@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var currentPassword = ""
+    @State private var passwordLength: Double = 12
 
     var body: some View {
         VStack(spacing: 32) {
@@ -17,6 +18,14 @@ struct ContentView: View {
             Text("PasswordGen")
                 .font(.largeTitle)
                 .fontWeight(.bold)
+
+            VStack(spacing: 8) {
+                Text("Password Length: \(Int(passwordLength))")
+                    .font(.headline)
+
+                Slider(value: $passwordLength, in: 4...32, step: 1)
+                    .padding(.horizontal)
+            }
 
             Text(currentPassword)
                 .font(.system(size: 28, weight: .medium, design: .monospaced))
@@ -27,7 +36,7 @@ struct ContentView: View {
                 .padding(.horizontal)
 
             Button {
-                currentPassword = PasswordGenerator.generate()
+                currentPassword = PasswordGenerator.generate(length: Int(passwordLength))
             } label: {
                 Text("Generate")
                     .font(.headline)
@@ -41,7 +50,10 @@ struct ContentView: View {
             Spacer()
         }
         .onAppear {
-            currentPassword = PasswordGenerator.generate()
+            currentPassword = PasswordGenerator.generate(length: Int(passwordLength))
+        }
+        .onChange(of: passwordLength) { _, _ in
+            currentPassword = PasswordGenerator.generate(length: Int(passwordLength))
         }
     }
 }
