@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List schemes
+        run: xcodebuild -list
+
+      - name: Build and test
+        run: |
+          xcodebuild test \
+            -scheme password-generator \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            | xcpretty && exit ${PIPESTATUS[0]}
