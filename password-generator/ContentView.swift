@@ -2,60 +2,50 @@
 //  ContentView.swift
 //  password-generator
 //
-//  Created by Stone Fuglaar  on 7/28/26.
+//  Created by Stone Fuglaar on 7/28/26.
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var currentPassword = ""
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
+        VStack(spacing: 32) {
+            Spacer()
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+            Text("PasswordGen")
+                .font(.largeTitle)
+                .fontWeight(.bold)
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            Text(currentPassword)
+                .font(.system(size: 28, weight: .medium, design: .monospaced))
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .padding(.horizontal)
+
+            Button {
+                currentPassword = PasswordGenerator.generate()
+            } label: {
+                Text("Generate")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal)
+
+            Spacer()
+            Spacer()
+        }
+        .onAppear {
+            currentPassword = PasswordGenerator.generate()
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
