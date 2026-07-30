@@ -147,4 +147,65 @@ struct password_generatorTests {
         )
         #expect(result == true)
     }
+
+    // MARK: - Multiple Character Types
+
+    @Test func uppercaseAndLowercaseOnly() {
+        let password = PasswordGenerator.generate(
+            length: 20,
+            useUppercase: true,
+            useLowercase: true,
+            useNumbers: false,
+            useSymbols: false
+        )
+        #expect(password.allSatisfy { $0.isLetter })
+    }
+
+    @Test func uppercaseAndNumbersOnly() {
+        let symbols = PasswordGenerator.symbols
+        let password = PasswordGenerator.generate(
+            length: 20,
+            useUppercase: true,
+            useLowercase: false,
+            useNumbers: true,
+            useSymbols: false
+        )
+        #expect(password.allSatisfy { $0.isUppercase || $0.isNumber })
+    }
+
+    @Test func lowercaseAndSymbolsOnly() {
+        let symbols = PasswordGenerator.symbols
+        let password = PasswordGenerator.generate(
+            length: 20,
+            useUppercase: false,
+            useLowercase: true,
+            useNumbers: false,
+            useSymbols: true
+        )
+        #expect(password.allSatisfy { $0.isLowercase || symbols.contains($0) })
+    }
+
+    @Test func threeTypesExcludingSymbols() {
+        let symbols = PasswordGenerator.symbols
+        let password = PasswordGenerator.generate(
+            length: 20,
+            useUppercase: true,
+            useLowercase: true,
+            useNumbers: true,
+            useSymbols: false
+        )
+        #expect(password.allSatisfy { !$0.isSymbol || !symbols.contains($0) })
+    }
+
+    @Test func threeTypesExcludingLowercase() {
+        let symbols = PasswordGenerator.symbols
+        let password = PasswordGenerator.generate(
+            length: 20,
+            useUppercase: true,
+            useLowercase: false,
+            useNumbers: true,
+            useSymbols: true
+        )
+        #expect(password.allSatisfy { !$0.isLowercase })
+    }
 }
