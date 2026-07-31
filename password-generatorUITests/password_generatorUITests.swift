@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import UIKit
 
 final class password_generatorUITests: XCTestCase {
 
@@ -39,5 +40,42 @@ final class password_generatorUITests: XCTestCase {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
+    }
+
+    // MARK: - US-4: Copy Password to Clipboard
+
+    @MainActor
+    func testCopyButtonExists() {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["CopyButton"].exists)
+    }
+
+    @MainActor
+    func testCopyButtonShowsToast() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["CopyButton"].tap()
+        XCTAssertTrue(app.otherElements["CopiedToast"].waitForExistence(timeout: 1))
+    }
+
+    @MainActor
+    func testToastDisappearsAfter2Seconds() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["CopyButton"].tap()
+        let toast = app.otherElements["CopiedToast"]
+        XCTAssertTrue(toast.waitForExistence(timeout: 1))
+        XCTAssertFalse(toast.waitForExistence(timeout: 3))
+    }
+
+    @MainActor
+    func testPasswordCopiedToClipboard() {
+        let app = XCUIApplication()
+        app.launch()
+        let passwordText = app.staticTexts["PasswordDisplay"]
+        let password = passwordText.label
+        app.buttons["CopyButton"].tap()
+        XCTAssertEqual(UIPasteboard.general.string, password)
     }
 }

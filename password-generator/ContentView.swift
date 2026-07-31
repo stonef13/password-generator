@@ -14,6 +14,8 @@ struct ContentView: View {
     @State private var useLowercase = true
     @State private var useNumbers = true
     @State private var useSymbols = true
+    @State private var showToast = false
+    @State private var toastTask: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 32) {
@@ -52,6 +54,25 @@ struct ContentView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
                 .padding(.horizontal)
+                .accessibilityIdentifier("PasswordDisplay")
+
+            Button {
+                ClipboardManager.copyToClipboard(currentPassword)
+                showToast = true
+                toastTask?.cancel()
+                toastTask = Task {
+                    try? await Task.sleep(for: .seconds(2))
+                    showToast = false
+                }
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal)
+            .accessibilityIdentifier("CopyButton")
 
             Button {
                 regenerate()
@@ -77,6 +98,24 @@ struct ContentView: View {
         .onChange(of: useLowercase) { _, _ in regenerate() }
         .onChange(of: useNumbers) { _, _ in regenerate() }
         .onChange(of: useSymbols) { _, _ in regenerate() }
+        .overlay {
+            if showToast {
+                VStack {
+                    Spacer()
+                    Text("Copied!")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(.black.opacity(0.8))
+                        .cornerRadius(10)
+                        .accessibilityIdentifier("CopiedToast")
+                    Spacer()
+                }
+                .animation(.easeIn, value: showToast)
+            }
+        }
     }
 
     private func regenerate() {
