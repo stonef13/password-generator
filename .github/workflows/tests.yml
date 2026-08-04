@@ -11,16 +11,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  unit-tests:
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and test
-        timeout-minutes: 15
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot "iPhone 17 Pro" || true
+          xcrun simctl list devices booted
+
+      - name: Run unit tests
+        timeout-minutes: 8
         run: |
           xcodebuild test \
             -scheme password-generator \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -only-testing:password-generatorTests \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+  ui-tests:
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot "iPhone 17 Pro" || true
+          xcrun simctl list devices booted
+
+      - name: Run UI tests
+        timeout-minutes: 10
+        run: |
+          xcodebuild test \
+            -scheme password-generator \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -only-testing:password-generatorUITests \
             | xcpretty && exit ${PIPESTATUS[0]}

@@ -162,7 +162,6 @@ struct password_generatorTests {
     }
 
     @Test func uppercaseAndNumbersOnly() {
-        let symbols = PasswordGenerator.symbols
         let password = PasswordGenerator.generate(
             length: 20,
             useUppercase: true,
@@ -198,7 +197,6 @@ struct password_generatorTests {
     }
 
     @Test func threeTypesExcludingLowercase() {
-        let symbols = PasswordGenerator.symbols
         let password = PasswordGenerator.generate(
             length: 20,
             useUppercase: true,
