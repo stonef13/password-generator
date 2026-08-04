@@ -13,16 +13,12 @@ concurrency:
 jobs:
   test:
     runs-on: macos-26
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: List available simulators
-        run: xcrun simctl list devices available | grep -i iphone
-
-      - name: List schemes
-        run: xcodebuild -list
-
       - name: Build and test
+        timeout-minutes: 15
         run: |
           xcodebuild test \
             -scheme password-generator \
