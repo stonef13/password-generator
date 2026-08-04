@@ -20,14 +20,30 @@ jobs:
       - name: Boot simulator
         run: |
           xcrun simctl boot "iPhone 17 Pro" || true
+          for i in $(seq 1 30); do
+            if xcrun simctl list devices booted | grep -q "iPhone 17 Pro"; then
+              echo "Simulator booted"
+              break
+            fi
+            echo "Waiting for simulator... ($i)"
+            sleep 2
+          done
           xcrun simctl list devices booted
 
-      - name: Run unit tests
-        timeout-minutes: 8
+      - name: Build for testing
+        timeout-minutes: 5
         run: |
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -scheme password-generator \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Run unit tests
+        timeout-minutes: 5
+        run: |
+          xcodebuild test-without-building \
+            -scheme password-generator \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
             -only-testing:password-generatorTests \
             | xcpretty && exit ${PIPESTATUS[0]}
 
@@ -40,13 +56,29 @@ jobs:
       - name: Boot simulator
         run: |
           xcrun simctl boot "iPhone 17 Pro" || true
+          for i in $(seq 1 30); do
+            if xcrun simctl list devices booted | grep -q "iPhone 17 Pro"; then
+              echo "Simulator booted"
+              break
+            fi
+            echo "Waiting for simulator... ($i)"
+            sleep 2
+          done
           xcrun simctl list devices booted
+
+      - name: Build for testing
+        timeout-minutes: 5
+        run: |
+          xcodebuild build-for-testing \
+            -scheme password-generator \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+            | xcpretty && exit ${PIPESTATUS[0]}
 
       - name: Run UI tests
         timeout-minutes: 10
         run: |
-          xcodebuild test \
+          xcodebuild test-without-building \
             -scheme password-generator \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
             -only-testing:password-generatorUITests \
             | xcpretty && exit ${PIPESTATUS[0]}
