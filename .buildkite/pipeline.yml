@@ -1,0 +1,29 @@
+steps:
+  - label: ":xcode: Build"
+    command: >
+      xcodebuild build
+      -project password-generator.xcodeproj
+      -scheme password-generator
+      -destination 'generic/platform=iOS Simulator'
+    agents:
+      queue: macos
+
+  - label: ":test_tube: Unit Tests"
+    command: >
+      xcodebuild test
+      -project password-generator.xcodeproj
+      -scheme password-generator
+      -destination 'generic/platform=iOS Simulator'
+      -only-testing:password-generatorTests
+    agents:
+      queue: macos
+
+  - label: ":iphone: UI Tests"
+    command: >
+      xcodebuild test
+      -project password-generator.xcodeproj
+      -scheme password-generator
+      -destination 'generic/platform=iOS Simulator'
+      -only-testing:password-generatorUITests
+    agents:
+      queue: macos
