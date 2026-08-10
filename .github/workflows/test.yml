@@ -8,55 +8,71 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-15
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 26.4.1
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26.4.1'
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
       - name: Build
         run: >
           xcodebuild build
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 17'
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
 
   unit-tests:
-    runs-on: macos-26
+    runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 26.4.1
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26.4.1'
-      - name: Boot simulator
-        run: xcrun simctl boot "iPhone 17" || true
-      - name: Unit Tests
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Build for testing
         run: >
-          xcodebuild test
+          xcodebuild build-for-testing
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 17'
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
+          -parallel-testing-enabled NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
+      - name: Run unit tests
+        run: >
+          xcodebuild test-without-building
+          -project password-generator.xcodeproj
+          -scheme password-generator
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
           -only-testing:password-generatorTests
+          -parallel-testing-enabled NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
 
   ui-tests:
-    runs-on: macos-26
+    runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 26.4.1
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26.4.1'
-      - name: Boot simulator
-        run: xcrun simctl boot "iPhone 17" || true
-      - name: UI Tests
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Build for testing
         run: >
-          xcodebuild test
+          xcodebuild build-for-testing
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 17'
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
+          -parallel-testing-enabled NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
+      - name: Run UI tests
+        run: >
+          xcodebuild test-without-building
+          -project password-generator.xcodeproj
+          -scheme password-generator
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
           -only-testing:password-generatorUITests
+          -parallel-testing-enabled NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
