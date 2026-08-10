@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -16,10 +16,10 @@ jobs:
           xcodebuild build
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -destination 'platform=iOS Simulator,name=iPhone 17'
 
   unit-tests:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Unit Tests
@@ -27,11 +27,11 @@ jobs:
           xcodebuild test
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -destination 'platform=iOS Simulator,name=iPhone 17'
           -only-testing:password-generatorTests
 
   ui-tests:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: UI Tests
@@ -39,5 +39,5 @@ jobs:
           xcodebuild test
           -project password-generator.xcodeproj
           -scheme password-generator
-          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -destination 'platform=iOS Simulator,name=iPhone 17'
           -only-testing:password-generatorUITests
