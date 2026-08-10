@@ -5,6 +5,8 @@ steps:
       -project password-generator.xcodeproj
       -scheme password-generator
       -destination 'generic/platform=iOS Simulator'
+    agents:
+      queue: macos-medium
 
   - label: ":test_tube: Unit Tests"
     command: >
@@ -13,6 +15,8 @@ steps:
       -scheme password-generator
       -destination 'generic/platform=iOS Simulator'
       -only-testing:password-generatorTests
+    agents:
+      queue: macos-medium
 
   - label: ":iphone: UI Tests"
     command: >
@@ -21,3 +25,5 @@ steps:
       -scheme password-generator
       -destination 'generic/platform=iOS Simulator'
       -only-testing:password-generatorUITests
+    agents:
+      queue: macos-medium
