@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: >
+          xcodebuild build
+          -project password-generator.xcodeproj
+          -scheme password-generator
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+
+  unit-tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit Tests
+        run: >
+          xcodebuild test
+          -project password-generator.xcodeproj
+          -scheme password-generator
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -only-testing:password-generatorTests
+
+  ui-tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: UI Tests
+        run: >
+          xcodebuild test
+          -project password-generator.xcodeproj
+          -scheme password-generator
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -only-testing:password-generatorUITests
