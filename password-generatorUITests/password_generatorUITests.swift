@@ -56,7 +56,8 @@ final class password_generatorUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         app.buttons["CopyButton"].tap()
-        XCTAssertTrue(app.otherElements["CopiedToast"].waitForExistence(timeout: 5))
+        let toast = app.descendants(matching: .any)["CopiedToast"]
+        XCTAssertTrue(toast.waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -64,9 +65,9 @@ final class password_generatorUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         app.buttons["CopyButton"].tap()
-        let toast = app.otherElements["CopiedToast"]
+        let toast = app.descendants(matching: .any)["CopiedToast"]
         XCTAssertTrue(toast.waitForExistence(timeout: 5))
-        XCTAssertFalse(toast.waitForExistence(timeout: 3))
+        XCTAssertFalse(toast.waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -74,6 +75,7 @@ final class password_generatorUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         let passwordText = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(passwordText.waitForExistence(timeout: 10))
         let password = passwordText.label
         app.buttons["CopyButton"].tap()
         if ProcessInfo.processInfo.environment["CI"] == nil {
