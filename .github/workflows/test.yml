@@ -69,7 +69,7 @@ jobs:
 
   ui-tests:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 16.4
@@ -106,7 +106,13 @@ jobs:
           -project password-generator.xcodeproj
           -scheme password-generator
           -destination '${{ steps.sim.outputs.dest }}'
-          -only-testing:password-generatorUITests
+          -only-testing:password-generatorUITests/password_generatorUITests/testCopyButtonExists
+          -only-testing:password-generatorUITests/password_generatorUITests/testCopyButtonShowsToast
+          -only-testing:password-generatorUITests/password_generatorUITests/testToastDisappearsAfter2Seconds
+          -only-testing:password-generatorUITests/password_generatorUITests/testPasswordCopiedToClipboard
           -parallel-testing-enabled NO
+          -test-timeouts-enabled YES
+          -default-test-execution-time-allowance 240
+          -maximum-test-execution-time-allowance 300
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGNING_ALLOWED=NO

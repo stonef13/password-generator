@@ -57,7 +57,7 @@ struct ContentView: View {
                 .accessibilityIdentifier("PasswordDisplay")
 
             Button {
-                ClipboardManager.copyToClipboard(currentPassword)
+                Task { await ClipboardManager.copyToClipboard(currentPassword) }
                 showToast = true
                 toastTask?.cancel()
                 toastTask = Task {

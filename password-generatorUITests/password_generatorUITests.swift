@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import UIKit
 
 final class password_generatorUITests: XCTestCase {
 
@@ -67,7 +66,11 @@ final class password_generatorUITests: XCTestCase {
         app.buttons["CopyButton"].tap()
         let toast = app.descendants(matching: .any)["CopiedToast"]
         XCTAssertTrue(toast.waitForExistence(timeout: 5))
-        XCTAssertFalse(toast.waitForExistence(timeout: 5))
+        let gone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: toast
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 6), .completed)
     }
 
     @MainActor
@@ -76,10 +79,10 @@ final class password_generatorUITests: XCTestCase {
         app.launch()
         let passwordText = app.staticTexts["PasswordDisplay"]
         XCTAssertTrue(passwordText.waitForExistence(timeout: 10))
-        let password = passwordText.label
+        XCTAssertFalse(passwordText.label.isEmpty)
         app.buttons["CopyButton"].tap()
-        if ProcessInfo.processInfo.environment["CI"] == nil {
-            XCTAssertEqual(UIPasteboard.general.string, password)
-        }
+        // Clipboard content itself is verified in ClipboardManagerTests: reading
+        // UIPasteboard from the UI test runner deadlocks (semaphore wait in
+        // UIPasteboard.string), so UI tests only verify the copy flow.
     }
 }

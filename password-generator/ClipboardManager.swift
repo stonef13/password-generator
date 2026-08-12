@@ -9,8 +9,13 @@ import UIKit
 
 struct ClipboardManager {
 
-    static func copyToClipboard(_ text: String) {
-        UIPasteboard.general.string = text
+    static func copyToClipboard(_ text: String) async {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                UIPasteboard.general.string = text
+                continuation.resume()
+            }
+        }
     }
 
     static func clipboardContent() -> String? {

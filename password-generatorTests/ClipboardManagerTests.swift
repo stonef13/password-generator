@@ -11,9 +11,9 @@ import UIKit
 
 struct ClipboardManagerTests {
 
-    @Test func copyToClipboardSetsContent() {
+    @Test func copyToClipboardSetsContent() async {
         let testString = "TestPassword123!"
-        ClipboardManager.copyToClipboard(testString)
+        await ClipboardManager.copyToClipboard(testString)
         #expect(ClipboardManager.clipboardContent() == testString)
     }
 
@@ -22,14 +22,14 @@ struct ClipboardManagerTests {
         #expect(ClipboardManager.clipboardContent() == nil)
     }
 
-    @Test func clipboardOverwritesPreviousContent() {
-        ClipboardManager.copyToClipboard("first")
-        ClipboardManager.copyToClipboard("second")
+    @Test func clipboardOverwritesPreviousContent() async {
+        await ClipboardManager.copyToClipboard("first")
+        await ClipboardManager.copyToClipboard("second")
         #expect(ClipboardManager.clipboardContent() == "second")
     }
 
-    @Test func clipboardHandlesEmptyString() {
-        ClipboardManager.copyToClipboard("")
+    @Test func clipboardHandlesEmptyString() async {
+        await ClipboardManager.copyToClipboard("")
         #expect(ClipboardManager.clipboardContent() == "")
     }
 }
