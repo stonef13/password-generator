@@ -16,8 +16,36 @@ struct ContentView: View {
     @State private var useSymbols = true
     @State private var showToast = false
     @State private var toastTask: Task<Void, Never>?
+    @StateObject private var historyStore = PasswordHistoryStore()
 
     var body: some View {
+        TabView {
+            generatorContent
+                .tabItem {
+                    Label("Generate", systemImage: "key")
+                }
+
+            HistoryView(store: historyStore)
+                .tabItem {
+                    Label("History", systemImage: "clock.arrow.circlepath")
+                }
+        }
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-resetHistory") {
+                historyStore.clear()
+            }
+            regenerate()
+        }
+        .onChange(of: passwordLength) { _, _ in
+            regenerate()
+        }
+        .onChange(of: useUppercase) { _, _ in regenerate() }
+        .onChange(of: useLowercase) { _, _ in regenerate() }
+        .onChange(of: useNumbers) { _, _ in regenerate() }
+        .onChange(of: useSymbols) { _, _ in regenerate() }
+    }
+
+    private var generatorContent: some View {
         VStack(spacing: 32) {
             Spacer()
 
@@ -84,37 +112,13 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal)
+            .accessibilityIdentifier("GenerateButton")
 
             Spacer()
             Spacer()
         }
-        .onAppear {
-            regenerate()
-        }
-        .onChange(of: passwordLength) { _, _ in
-            regenerate()
-        }
-        .onChange(of: useUppercase) { _, _ in regenerate() }
-        .onChange(of: useLowercase) { _, _ in regenerate() }
-        .onChange(of: useNumbers) { _, _ in regenerate() }
-        .onChange(of: useSymbols) { _, _ in regenerate() }
         .overlay {
-            if showToast {
-                VStack {
-                    Spacer()
-                    Text("Copied!")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(.black.opacity(0.8))
-                        .cornerRadius(10)
-                        .accessibilityIdentifier("CopiedToast")
-                    Spacer()
-                }
-                .animation(.easeIn, value: showToast)
-            }
+            CopyConfirmationBadge(show: showToast)
         }
     }
 
@@ -132,6 +136,7 @@ struct ContentView: View {
             useNumbers: useNumbers,
             useSymbols: useSymbols
         )
+        historyStore.add(currentPassword)
     }
 }
 
