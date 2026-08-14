@@ -14,14 +14,21 @@ struct PasswordGenerator {
     static let lowercase = "abcdefghijklmnopqrstuvwxyz"
     static let numbers = "0123456789"
     static let symbols = "!@#$%^&*()-_=+[]{}|;:',.<>?/"
+    static let ambiguous = "0O1lIo|'[]{};:,.<>?/"
 
     static func generate(
         length: Int = 12,
         useUppercase: Bool = true,
         useLowercase: Bool = true,
         useNumbers: Bool = true,
-        useSymbols: Bool = true
+        useSymbols: Bool = true,
+        excludeAmbiguous: Bool = false
     ) -> String {
+        let uppercase = excludeAmbiguous ? ambiguousFree(Self.uppercase) : Self.uppercase
+        let lowercase = excludeAmbiguous ? ambiguousFree(Self.lowercase) : Self.lowercase
+        let numbers = excludeAmbiguous ? ambiguousFree(Self.numbers) : Self.numbers
+        let symbols = excludeAmbiguous ? ambiguousFree(Self.symbols) : Self.symbols
+
         var pool = ""
         if useUppercase { pool += uppercase }
         if useLowercase { pool += lowercase }
@@ -31,10 +38,10 @@ struct PasswordGenerator {
         precondition(!pool.isEmpty, "At least one character type must be enabled")
 
         var enabledSets: [String] = []
-        if useUppercase { enabledSets.append(uppercase) }
-        if useLowercase { enabledSets.append(lowercase) }
-        if useNumbers { enabledSets.append(numbers) }
-        if useSymbols { enabledSets.append(symbols) }
+        if useUppercase, !uppercase.isEmpty { enabledSets.append(uppercase) }
+        if useLowercase, !lowercase.isEmpty { enabledSets.append(lowercase) }
+        if useNumbers, !numbers.isEmpty { enabledSets.append(numbers) }
+        if useSymbols, !symbols.isEmpty { enabledSets.append(symbols) }
 
         var characters: [Character] = []
 
@@ -58,6 +65,10 @@ struct PasswordGenerator {
         useSymbols: Bool
     ) -> Bool {
         return useUppercase || useLowercase || useNumbers || useSymbols
+    }
+
+    static func ambiguousFree(_ characters: String) -> String {
+        characters.filter { !ambiguous.contains($0) }
     }
 
     private static func character(from set: String) -> Character {
