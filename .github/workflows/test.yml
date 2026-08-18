@@ -106,16 +106,7 @@ jobs:
           -project password-generator.xcodeproj
           -scheme password-generator
           -destination '${{ steps.sim.outputs.dest }}'
-          -only-testing:password-generatorUITests/password_generatorUITests/testCopyButtonExists
-          -only-testing:password-generatorUITests/password_generatorUITests/testCopyButtonShowsToast
-          -only-testing:password-generatorUITests/password_generatorUITests/testToastDisappearsAfter2Seconds
-          -only-testing:password-generatorUITests/password_generatorUITests/testPasswordCopiedToClipboard
-          -only-testing:password-generatorUITests/FavoritesUITests/testStarButtonExistsOnHistoryRow
-          -only-testing:password-generatorUITests/FavoritesUITests/testTappingStarMarksAsFavorite
-          -only-testing:password-generatorUITests/FavoritesUITests/testFavoritedPasswordAppearsInFavoritesSection
-          -only-testing:password-generatorUITests/FavoritesUITests/testFavoritesPersistAcrossLaunch
-          -only-testing:password-generatorUITests/FavoritesUITests/testStarTapDoesNotShowCopiedToast
-          -only-testing:password-generatorUITests/FavoritesUITests/testTappingRowBodyShowsCopiedToast
+          -only-testing:password-generatorUITests
           -parallel-testing-enabled NO
           -test-timeouts-enabled YES
           -default-test-execution-time-allowance 240

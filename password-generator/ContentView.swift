@@ -58,13 +58,56 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
+                Text(currentPassword)
+                    .font(.system(size: 28, weight: .medium, design: .monospaced))
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    .accessibilityIdentifier("PasswordDisplay")
+
+                StrengthIndicator(strength: currentStrength)
+
+                VStack(spacing: 8) {
+                    if showToast {
+                        Text("Copied!")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(.black.opacity(0.8))
+                            .cornerRadius(10)
+                            .transition(.opacity)
+                            .accessibilityIdentifier("CopiedToast")
+                    }
+                    Button {
+                        Task { await ClipboardManager.copyToClipboard(currentPassword) }
+                        showToast = true
+                        toastTask?.cancel()
+                        toastTask = Task {
+                            try? await Task.sleep(for: .seconds(2))
+                            showToast = false
+                        }
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("CopyButton")
+                }
+                .padding(.horizontal)
+
                 VStack(spacing: 8) {
                     Text("Password Length: \(Int(passwordLength))")
                         .font(.headline)
 
                     Slider(value: $passwordLength, in: 4...32, step: 1)
-                        .padding(.horizontal)
                 }
+                .padding(.horizontal)
 
                 VStack(spacing: 8) {
                     Text("Character Types")
@@ -78,6 +121,7 @@ struct ContentView: View {
                     Toggle("Symbols (!@#$)", isOn: $useSymbols)
                         .disabled(useSymbols && !useUppercase && !useLowercase && !useNumbers)
                 }
+                .tint(.accentColor)
                 .padding(.horizontal)
 
                 VStack(spacing: 8) {
@@ -87,35 +131,6 @@ struct ContentView: View {
                         .accessibilityIdentifier("ExcludeAmbiguousToggle")
                 }
                 .padding(.horizontal)
-
-                Text(currentPassword)
-                    .font(.system(size: 28, weight: .medium, design: .monospaced))
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-                    .accessibilityIdentifier("PasswordDisplay")
-
-                StrengthIndicator(strength: currentStrength)
-
-                Button {
-                    Task { await ClipboardManager.copyToClipboard(currentPassword) }
-                    showToast = true
-                    toastTask?.cancel()
-                    toastTask = Task {
-                        try? await Task.sleep(for: .seconds(2))
-                        showToast = false
-                    }
-                } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal)
-                .accessibilityIdentifier("CopyButton")
 
                 Button {
                     regenerate()
@@ -131,9 +146,7 @@ struct ContentView: View {
             }
             .padding(.vertical)
         }
-        .overlay {
-            CopyConfirmationBadge(show: showToast)
-        }
+        .animation(.easeInOut(duration: 0.2), value: showToast)
     }
 
     private func regenerate() {

@@ -144,4 +144,53 @@ struct PasswordHistoryTests {
 
         #expect(store.entries.isEmpty)
     }
+
+    // MARK: - Cap Behavior
+
+    @Test func maxEntriesIs10() {
+        #expect(PasswordHistoryStore.maxEntries == 10)
+    }
+
+    @Test func adding11thEntryKeepsNewest10() {
+        let (store, _, suiteName) = makeStore()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        for i in 1...11 {
+            store.add("pw-\(i)")
+        }
+        #expect(store.entries.count == 10)
+        #expect(store.entries.first?.password == "pw-11")
+        #expect(store.entries.last?.password == "pw-2")
+        #expect(store.entries.contains { $0.password == "pw-1" } == false)
+    }
+
+    // MARK: - Favorite Toggle Persistence
+
+    @Test func favoriteToggleSurvivesDecode() {
+        let suiteName = "PasswordHistoryTests-\(UUID().uuidString)"
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        let defaults = UserDefaults(suiteName: suiteName)!
+
+        let item = PasswordHistoryItem(password: "fav", isFavorite: true)
+        let data = try! JSONEncoder().encode([item])
+        defaults.set(data, forKey: "passwordHistory")
+
+        let store = PasswordHistoryStore(defaults: defaults)
+        #expect(store.entries.first?.isFavorite == true)
+        #expect(store.favorites.count == 1)
+    }
+
+    @Test func removeEntryByIdDoesNotAffectOthers() {
+        let (store, _, suiteName) = makeStore()
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        store.add("first")
+        store.add("second")
+        store.add("third")
+        let second = store.entries[1]
+        store.remove(second)
+
+        #expect(store.entries.count == 2)
+        #expect(store.entries.map(\.password) == ["third", "first"])
+    }
 }

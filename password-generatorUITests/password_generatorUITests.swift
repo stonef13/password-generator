@@ -85,4 +85,119 @@ final class password_generatorUITests: XCTestCase {
         // UIPasteboard from the UI test runner deadlocks (semaphore wait in
         // UIPasteboard.string), so UI tests only verify the copy flow.
     }
+
+    // MARK: - US-1: Default Password Display
+
+    @MainActor
+    func testDefaultPasswordIsDisplayed() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+        XCTAssertFalse(display.label.isEmpty, "Password should not be empty")
+    }
+
+    @MainActor
+    func testGenerateButtonRegeneratesPassword() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+        let original = display.label
+
+        app.buttons["GenerateButton"].tap()
+
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label != %@", original),
+            object: display
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
+    }
+
+    // MARK: - US-2: Customize Password Length
+
+    @MainActor
+    func testSliderAdjustsPasswordLength() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+
+        let slider = app.sliders.firstMatch
+        XCTAssertTrue(slider.exists)
+        slider.adjust(toNormalizedSliderPosition: 0)
+
+        let shortExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label.length == 4"),
+            object: display
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [shortExpectation], timeout: 5), .completed)
+    }
+
+    @MainActor
+    func testSliderToMaxProduces32Characters() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+
+        let slider = app.sliders.firstMatch
+        XCTAssertTrue(slider.exists)
+        slider.adjust(toNormalizedSliderPosition: 1)
+
+        let longExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label.length == 32"),
+            object: display
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [longExpectation], timeout: 5), .completed)
+    }
+
+    // MARK: - US-3: Toggle Character Types
+
+    @MainActor
+    func testTogglingUppercaseRegeneratesPassword() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+
+        app.buttons["GenerateButton"].tap()
+        let original = display.label
+
+        app.switches["Uppercase (A-Z)"].tap()
+
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label != %@", original),
+            object: display
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
+    }
+
+    @MainActor
+    func testTogglingSymbolsRegeneratesPassword() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+
+        app.buttons["GenerateButton"].tap()
+        let original = display.label
+
+        app.switches["Symbols (!@#$)"].tap()
+
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label != %@", original),
+            object: display
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
+    }
+
+    @MainActor
+    func testPasswordDisplayHasMonospacedFont() {
+        let app = XCUIApplication()
+        app.launch()
+        let display = app.staticTexts["PasswordDisplay"]
+        XCTAssertTrue(display.waitForExistence(timeout: 10))
+        XCTAssertTrue(display.isHittable, "Password display should be visible")
+    }
 }

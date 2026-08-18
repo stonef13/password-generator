@@ -206,4 +206,73 @@ struct password_generatorTests {
         )
         #expect(password.allSatisfy { !$0.isLowercase })
     }
+
+    // MARK: - Length Bounds
+
+    @Test func length4Generates4Characters() {
+        let password = PasswordGenerator.generate(length: 4)
+        #expect(password.count == 4)
+        #expect(password.contains { $0.isUppercase })
+        #expect(password.contains { $0.isLowercase })
+        #expect(password.contains { $0.isNumber })
+        #expect(password.contains { PasswordGenerator.symbols.contains($0) })
+    }
+
+    @Test func length32Generates32Characters() {
+        let password = PasswordGenerator.generate(length: 32)
+        #expect(password.count == 32)
+        #expect(password.contains { $0.isUppercase })
+        #expect(password.contains { $0.isLowercase })
+        #expect(password.contains { $0.isNumber })
+        #expect(password.contains { PasswordGenerator.symbols.contains($0) })
+    }
+
+    @Test func allCharacterTypesPresentInDefault12CharPassword() {
+        for _ in 0..<50 {
+            let password = PasswordGenerator.generate()
+            #expect(password.contains { $0.isUppercase })
+            #expect(password.contains { $0.isLowercase })
+            #expect(password.contains { $0.isNumber })
+            #expect(password.contains { PasswordGenerator.symbols.contains($0) })
+        }
+    }
+
+    // MARK: - Ambiguous Exclusion Completeness
+
+    @Test func excludeAmbiguousRemovesAllAmbiguousFromEveryType() {
+        let password = PasswordGenerator.generate(length: 32, excludeAmbiguous: true)
+        for char in password {
+            #expect(!PasswordGenerator.ambiguous.contains(char),
+                    "Password should not contain ambiguous character '\(char)'")
+        }
+    }
+
+    @Test func ambiguousFreeSymbolsDoesNotContainPipeOrBrackets() {
+        let symbols = PasswordGenerator.ambiguousFree(PasswordGenerator.symbols)
+        #expect(!symbols.contains("|"))
+        #expect(!symbols.contains("["))
+        #expect(!symbols.contains("]"))
+        #expect(!symbols.contains("{"))
+        #expect(!symbols.contains("}"))
+        #expect(!symbols.contains("'"))
+        #expect(!symbols.contains("<"))
+        #expect(!symbols.contains(">"))
+        #expect(!symbols.contains("?"))
+        #expect(!symbols.contains("/"))
+    }
+
+    // MARK: - canGenerate Edge Cases
+
+    @Test func canGenerateReturnsTrueForEverySingleType() {
+        #expect(PasswordGenerator.canGenerate(useUppercase: true, useLowercase: false, useNumbers: false, useSymbols: false))
+        #expect(PasswordGenerator.canGenerate(useUppercase: false, useLowercase: true, useNumbers: false, useSymbols: false))
+        #expect(PasswordGenerator.canGenerate(useUppercase: false, useLowercase: false, useNumbers: true, useSymbols: false))
+        #expect(PasswordGenerator.canGenerate(useUppercase: false, useLowercase: false, useNumbers: false, useSymbols: true))
+    }
+
+    @Test func canGenerateReturnsTrueForAllCombinations() {
+        #expect(PasswordGenerator.canGenerate(useUppercase: true, useLowercase: true, useNumbers: true, useSymbols: true))
+        #expect(PasswordGenerator.canGenerate(useUppercase: true, useLowercase: true, useNumbers: true, useSymbols: false))
+        #expect(PasswordGenerator.canGenerate(useUppercase: false, useLowercase: false, useNumbers: false, useSymbols: false) == false)
+    }
 }

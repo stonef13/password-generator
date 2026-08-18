@@ -146,4 +146,39 @@ struct PasswordStrengthTests {
             #expect(PasswordStrengthCalculator.strength(of: password) == .medium)
         }
     }
+
+    // MARK: - All Generated Configurations Have Expected Strength
+
+    @Test func eightCharLowercaseOnlyIsWeak() {
+        for _ in 0..<20 {
+            let password = PasswordGenerator.generate(
+                length: 8,
+                useUppercase: false,
+                useLowercase: true,
+                useNumbers: false,
+                useSymbols: false
+            )
+            #expect(PasswordStrengthCalculator.strength(of: password) == .weak)
+        }
+    }
+
+    @Test func sixteenCharAllTypesIsStrong() {
+        for _ in 0..<20 {
+            let password = PasswordGenerator.generate(length: 16)
+            #expect(PasswordStrengthCalculator.strength(of: password) == .strong)
+        }
+    }
+
+    @Test func sixCharMixedTypesIsWeak() {
+        for _ in 0..<20 {
+            let password = PasswordGenerator.generate(
+                length: 6,
+                useUppercase: true,
+                useLowercase: true,
+                useNumbers: true,
+                useSymbols: false
+            )
+            #expect(PasswordStrengthCalculator.strength(of: password) == .weak)
+        }
+    }
 }
