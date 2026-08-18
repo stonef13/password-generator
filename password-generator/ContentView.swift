@@ -19,6 +19,10 @@ struct ContentView: View {
     @State private var toastTask: Task<Void, Never>?
     @StateObject private var historyStore = PasswordHistoryStore()
 
+    private var currentStrength: PasswordStrength {
+        PasswordStrengthCalculator.strength(of: currentPassword)
+    }
+
     var body: some View {
         TabView {
             generatorContent
@@ -92,6 +96,8 @@ struct ContentView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
                     .accessibilityIdentifier("PasswordDisplay")
+
+                StrengthIndicator(strength: currentStrength)
 
                 Button {
                     Task { await ClipboardManager.copyToClipboard(currentPassword) }
