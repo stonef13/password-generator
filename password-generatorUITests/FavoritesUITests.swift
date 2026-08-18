@@ -24,10 +24,16 @@ final class FavoritesUITests: XCTestCase {
         app.tabBars.buttons["History"].tap()
     }
 
-    private func generatePasswords(_ app: XCUIApplication, count: Int = 3) {
-        for _ in 0..<count {
-            app.buttons["GenerateButton"].tap()
-        }
+    private func copyButton(_ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)["HistoryRow_0"]
+    }
+
+    private func starButton(_ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)["FavoriteButton_Recent_0"]
+    }
+
+    private func favoritesHeader(_ app: XCUIApplication) -> XCUIElement {
+        app.descendants(matching: .any)["FavoritesSectionHeader"]
     }
 
     // MARK: - Star button exists on history rows
@@ -36,10 +42,9 @@ final class FavoritesUITests: XCTestCase {
     func testStarButtonExistsOnHistoryRow() {
         let app = makeApp()
         openHistoryTab(in: app)
-        let firstRow = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'HistoryRow_'")).firstMatch
-        XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_'")).firstMatch
-        XCTAssertTrue(starButton.waitForExistence(timeout: 5))
+
+        XCTAssertTrue(copyButton(app).waitForExistence(timeout: 5))
+        XCTAssertTrue(starButton(app).waitForExistence(timeout: 5))
     }
 
     // MARK: - Tapping star toggles favorite state
@@ -48,25 +53,25 @@ final class FavoritesUITests: XCTestCase {
     func testTappingStarMarksAsFavorite() {
         let app = makeApp()
         openHistoryTab(in: app)
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_'")).firstMatch
+
+        let starButton = starButton(app)
         XCTAssertTrue(starButton.waitForExistence(timeout: 5))
         starButton.tap()
 
-        let favoritesSection = app.otherElements["FavoritesSection"]
-        XCTAssertTrue(favoritesSection.waitForExistence(timeout: 5))
+        XCTAssertTrue(favoritesHeader(app).waitForExistence(timeout: 5))
     }
 
     @MainActor
     func testTappingStarTwiceUnfavorites() {
         let app = makeApp()
         openHistoryTab(in: app)
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_'")).firstMatch
+
+        let starButton = starButton(app)
         XCTAssertTrue(starButton.waitForExistence(timeout: 5))
         starButton.tap()
         starButton.tap()
 
-        let favoritesSection = app.otherElements["FavoritesSection"]
-        XCTAssertFalse(favoritesSection.waitForExistence(timeout: 2))
+        XCTAssertFalse(favoritesHeader(app).waitForExistence(timeout: 2))
     }
 
     // MARK: - Favorite appears in Favorites section
@@ -74,15 +79,13 @@ final class FavoritesUITests: XCTestCase {
     @MainActor
     func testFavoritedPasswordAppearsInFavoritesSection() {
         let app = makeApp()
-        generatePasswords(app, count: 3)
         openHistoryTab(in: app)
 
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_Recent'")).firstMatch
+        let starButton = starButton(app)
         XCTAssertTrue(starButton.waitForExistence(timeout: 5))
         starButton.tap()
 
-        let favoritesSection = app.otherElements["FavoritesSection"]
-        XCTAssertTrue(favoritesSection.waitForExistence(timeout: 5))
+        XCTAssertTrue(favoritesHeader(app).waitForExistence(timeout: 5))
     }
 
     // MARK: - Favorites persist across relaunch
@@ -90,15 +93,12 @@ final class FavoritesUITests: XCTestCase {
     @MainActor
     func testFavoritesPersistAcrossLaunch() {
         let app = makeApp()
-        generatePasswords(app, count: 3)
         openHistoryTab(in: app)
 
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_Recent'")).firstMatch
+        let starButton = starButton(app)
         XCTAssertTrue(starButton.waitForExistence(timeout: 5))
         starButton.tap()
-
-        let favoritesSection = app.otherElements["FavoritesSection"]
-        XCTAssertTrue(favoritesSection.waitForExistence(timeout: 5))
+        XCTAssertTrue(favoritesHeader(app).waitForExistence(timeout: 5))
 
         app.terminate()
 
@@ -106,8 +106,7 @@ final class FavoritesUITests: XCTestCase {
         relaunched.launch()
         relaunched.tabBars.buttons["History"].tap()
 
-        let relaunchedFavorites = relaunched.otherElements["FavoritesSection"]
-        XCTAssertTrue(relaunchedFavorites.waitForExistence(timeout: 5))
+        XCTAssertTrue(favoritesHeader(relaunched).waitForExistence(timeout: 5))
     }
 
     // MARK: - Star tap does not show copy toast
@@ -116,7 +115,8 @@ final class FavoritesUITests: XCTestCase {
     func testStarTapDoesNotShowCopiedToast() {
         let app = makeApp()
         openHistoryTab(in: app)
-        let starButton = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'FavoriteButton_'")).firstMatch
+
+        let starButton = starButton(app)
         XCTAssertTrue(starButton.waitForExistence(timeout: 5))
         starButton.tap()
 
@@ -130,7 +130,8 @@ final class FavoritesUITests: XCTestCase {
     func testTappingRowBodyShowsCopiedToast() {
         let app = makeApp()
         openHistoryTab(in: app)
-        let firstRow = app.buttons.matching(NSPredicate(format: "identifier CONTAINS 'HistoryRow_'")).firstMatch
+
+        let firstRow = copyButton(app)
         XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
         firstRow.tap()
 

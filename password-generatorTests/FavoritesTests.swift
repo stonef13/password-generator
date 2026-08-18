@@ -113,7 +113,7 @@ struct FavoritesTests {
         let oldItem: [String: Any] = [
             "id": UUID().uuidString,
             "password": "old-password",
-            "createdAt": Date(timeIntervalSince1970: 1_700_000_000)
+            "createdAt": 700000000.0
         ]
         let data = try! JSONSerialization.data(withJSONObject: [oldItem])
         defaults.set(data, forKey: "passwordHistory")

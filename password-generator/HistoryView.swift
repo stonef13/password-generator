@@ -25,7 +25,7 @@ struct HistoryView: View {
                 } else {
                     List {
                         if !store.favorites.isEmpty {
-                            Section("Favorites") {
+                            Section {
                                 ForEach(Array(store.favorites.enumerated()), id: \.element.id) { index, item in
                                     historyRow(item: item, index: index, section: "Favorites")
                                 }
@@ -34,8 +34,10 @@ struct HistoryView: View {
                                         store.remove(store.favorites[index])
                                     }
                                 }
+                            } header: {
+                                Text("Favorites")
+                                    .accessibilityIdentifier("FavoritesSectionHeader")
                             }
-                            .accessibilityIdentifier("FavoritesSection")
                         }
 
                         Section("Recent") {
@@ -89,7 +91,8 @@ struct HistoryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
+            .accessibilityIdentifier(section == "Recent" ? "HistoryRow_\(index)" : "FavoriteRow_\(index)")
 
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -100,10 +103,11 @@ struct HistoryView: View {
                     .foregroundColor(item.isFavorite ? .yellow : .secondary)
                     .font(.title3)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
             .accessibilityLabel(item.isFavorite ? "Unfavorite" : "Favorite")
             .accessibilityIdentifier("FavoriteButton_\(section)_\(index)")
         }
+        .accessibilityElement(children: .contain)
     }
 
     private func copy(_ password: String) {
