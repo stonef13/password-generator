@@ -8,15 +8,31 @@
 import Foundation
 import Combine
 
-struct PasswordHistoryItem: Codable, Identifiable, Equatable {
+struct PasswordHistoryItem: Identifiable, Equatable {
     let id: UUID
     let password: String
     let createdAt: Date
+    var isFavorite: Bool
 
-    init(id: UUID = UUID(), password: String, createdAt: Date = Date()) {
+    init(id: UUID = UUID(), password: String, createdAt: Date = Date(), isFavorite: Bool = false) {
         self.id = id
         self.password = password
         self.createdAt = createdAt
+        self.isFavorite = isFavorite
+    }
+}
+
+extension PasswordHistoryItem: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id, password, createdAt, isFavorite
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        password = try container.decode(String.self, forKey: .password)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        isFavorite = (try? container.decode(Bool.self, forKey: .isFavorite)) ?? false
     }
 }
 
@@ -43,6 +59,16 @@ final class PasswordHistoryStore: ObservableObject {
             entries = Array(entries.prefix(Self.maxEntries))
         }
         save()
+    }
+
+    func toggleFavorite(id: UUID) {
+        guard let index = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[index].isFavorite.toggle()
+        save()
+    }
+
+    var favorites: [PasswordHistoryItem] {
+        entries.filter(\.isFavorite)
     }
 
     func remove(_ item: PasswordHistoryItem) {

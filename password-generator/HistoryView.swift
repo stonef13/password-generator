@@ -24,31 +24,31 @@ struct HistoryView: View {
                     .accessibilityIdentifier("HistoryEmptyState")
                 } else {
                     List {
-                        ForEach(Array(store.entries.enumerated()), id: \.element.id) { index, item in
-                            Button {
-                                copy(item.password)
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(item.password)
-                                        .font(.system(size: 16, weight: .medium, design: .monospaced))
-                                        .foregroundColor(.primary)
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                    Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                        if !store.favorites.isEmpty {
+                            Section("Favorites") {
+                                ForEach(Array(store.favorites.enumerated()), id: \.element.id) { index, item in
+                                    historyRow(item: item, index: index, section: "Favorites")
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
+                                .onDelete { offsets in
+                                    for index in offsets {
+                                        store.remove(store.favorites[index])
+                                    }
+                                }
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("HistoryRow_\(index)")
+                            .accessibilityIdentifier("FavoritesSection")
                         }
-                        .onDelete { offsets in
-                            for index in offsets {
-                                store.remove(store.entries[index])
+
+                        Section("Recent") {
+                            ForEach(Array(store.entries.enumerated()), id: \.element.id) { index, item in
+                                historyRow(item: item, index: index, section: "Recent")
+                            }
+                            .onDelete { offsets in
+                                for index in offsets {
+                                    store.remove(store.entries[index])
+                                }
                             }
                         }
+                        .accessibilityIdentifier("RecentSection")
                     }
                 }
             }
@@ -68,6 +68,41 @@ struct HistoryView: View {
         }
         .overlay {
             CopyConfirmationBadge(show: showToast)
+        }
+    }
+
+    private func historyRow(item: PasswordHistoryItem, index: Int, section: String) -> some View {
+        HStack {
+            Button {
+                copy(item.password)
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.password)
+                        .font(.system(size: 16, weight: .medium, design: .monospaced))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    store.toggleFavorite(id: item.id)
+                }
+            } label: {
+                Image(systemName: item.isFavorite ? "star.fill" : "star")
+                    .foregroundColor(item.isFavorite ? .yellow : .secondary)
+                    .font(.title3)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(item.isFavorite ? "Unfavorite" : "Favorite")
+            .accessibilityIdentifier("FavoriteButton_\(section)_\(index)")
         }
     }
 
