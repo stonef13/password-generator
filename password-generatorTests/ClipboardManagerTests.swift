@@ -9,6 +9,7 @@ import Testing
 import UIKit
 @testable import password_generator
 
+@Suite(.serialized)
 struct ClipboardManagerTests {
 
     @Test func copyToClipboardSetsContent() async {

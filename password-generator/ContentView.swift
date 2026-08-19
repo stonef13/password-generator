@@ -17,10 +17,19 @@ struct ContentView: View {
     @State private var excludeAmbiguous = false
     @State private var showToast = false
     @State private var toastTask: Task<Void, Never>?
+    @State private var currentItemID: UUID?
     @StateObject private var historyStore = PasswordHistoryStore()
 
     private var currentStrength: PasswordStrength {
         PasswordStrengthCalculator.strength(of: currentPassword)
+    }
+
+    private var isCurrentFavorite: Bool {
+        if let id = currentItemID,
+           let entry = historyStore.entries.first(where: { $0.id == id }) {
+            return entry.isFavorite
+        }
+        return historyStore.entries.first(where: { $0.password == currentPassword })?.isFavorite ?? false
     }
 
     var body: some View {
@@ -39,7 +48,7 @@ struct ContentView: View {
             if ProcessInfo.processInfo.arguments.contains("-resetHistory") {
                 historyStore.clear()
             }
-            regenerate()
+            generateAndRecord()
         }
         .onChange(of: passwordLength) { _, _ in
             regenerate()
@@ -70,34 +79,37 @@ struct ContentView: View {
                 StrengthIndicator(strength: currentStrength)
 
                 VStack(spacing: 8) {
-                    if showToast {
-                        Text("Copied!")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(.black.opacity(0.8))
-                            .cornerRadius(10)
-                            .transition(.opacity)
-                            .accessibilityIdentifier("CopiedToast")
-                    }
-                    Button {
-                        Task { await ClipboardManager.copyToClipboard(currentPassword) }
-                        showToast = true
-                        toastTask?.cancel()
-                        toastTask = Task {
-                            try? await Task.sleep(for: .seconds(2))
-                            showToast = false
+                    CopyConfirmationBadge(show: showToast)
+                    HStack(spacing: 8) {
+                        Button {
+                            toggleFavoriteCurrent()
+                        } label: {
+                            Image(systemName: isCurrentFavorite ? "star.fill" : "star")
+                                .font(.title2)
+                                .frame(width: 50, height: 50)
                         }
-                    } label: {
-                        Label("Copy", systemImage: "doc.on.doc")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                        .buttonStyle(.bordered)
+                        .tint(.yellow)
+                        .accessibilityLabel(isCurrentFavorite ? "Unfavorite current password" : "Favorite current password")
+                        .accessibilityIdentifier("FavoriteCurrentButton")
+
+                        Button {
+                            Task { await ClipboardManager.copyToClipboard(currentPassword) }
+                            showToast = true
+                            toastTask?.cancel()
+                            toastTask = Task {
+                                try? await Task.sleep(for: .seconds(2))
+                                showToast = false
+                            }
+                        } label: {
+                            Label("Copy", systemImage: "doc.on.doc")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("CopyButton")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .accessibilityIdentifier("CopyButton")
                 }
                 .padding(.horizontal)
 
@@ -133,7 +145,7 @@ struct ContentView: View {
                 .padding(.horizontal)
 
                 Button {
-                    regenerate()
+                    generateAndRecord()
                 } label: {
                     Text("Generate")
                         .font(.headline)
@@ -146,7 +158,6 @@ struct ContentView: View {
             }
             .padding(.vertical)
         }
-        .animation(.easeInOut(duration: 0.2), value: showToast)
     }
 
     private func regenerate() {
@@ -164,7 +175,32 @@ struct ContentView: View {
             useSymbols: useSymbols,
             excludeAmbiguous: excludeAmbiguous
         )
+        currentItemID = historyStore.entries.first(where: { $0.password == currentPassword })?.id
+    }
+
+    private func generateAndRecord() {
+        regenerate()
         historyStore.add(currentPassword)
+        currentItemID = historyStore.entries.first(where: { $0.password == currentPassword })?.id
+    }
+
+    private func toggleFavoriteCurrent() {
+        guard !currentPassword.isEmpty else { return }
+        if let id = currentItemID,
+           historyStore.entries.contains(where: { $0.id == id }) {
+            historyStore.toggleFavorite(id: id)
+            return
+        }
+        if let entry = historyStore.entries.first(where: { $0.password == currentPassword }) {
+            currentItemID = entry.id
+            historyStore.toggleFavorite(id: entry.id)
+            return
+        }
+        historyStore.add(currentPassword)
+        if let entry = historyStore.entries.first(where: { $0.password == currentPassword }) {
+            currentItemID = entry.id
+            historyStore.toggleFavorite(id: entry.id)
+        }
     }
 }
 

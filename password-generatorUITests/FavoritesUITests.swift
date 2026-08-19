@@ -124,6 +124,48 @@ final class FavoritesUITests: XCTestCase {
         XCTAssertFalse(toast.waitForExistence(timeout: 1))
     }
 
+    // MARK: - Star on generator screen
+
+    @MainActor
+    func testStarButtonExistsOnGeneratorScreen() {
+        let app = makeApp()
+        XCTAssertTrue(app.buttons["FavoriteCurrentButton"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testTappingStarOnGeneratorFavoritesCurrentPassword() {
+        let app = makeApp()
+        let star = app.buttons["FavoriteCurrentButton"]
+        XCTAssertTrue(star.waitForExistence(timeout: 5))
+        star.tap()
+
+        openHistoryTab(in: app)
+        XCTAssertTrue(favoritesHeader(app).waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testTappingStarOnGeneratorTwiceUnfavorites() {
+        let app = makeApp()
+        let star = app.buttons["FavoriteCurrentButton"]
+        XCTAssertTrue(star.waitForExistence(timeout: 5))
+        star.tap()
+        star.tap()
+
+        openHistoryTab(in: app)
+        XCTAssertFalse(favoritesHeader(app).waitForExistence(timeout: 2))
+    }
+
+    @MainActor
+    func testStarOnGeneratorDoesNotShowCopiedToast() {
+        let app = makeApp()
+        let star = app.buttons["FavoriteCurrentButton"]
+        XCTAssertTrue(star.waitForExistence(timeout: 5))
+        star.tap()
+
+        let toast = app.descendants(matching: .any)["CopiedToast"]
+        XCTAssertFalse(toast.waitForExistence(timeout: 1))
+    }
+
     // MARK: - Tapping row body still copies (toast appears)
 
     @MainActor

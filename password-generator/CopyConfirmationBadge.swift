@@ -12,21 +12,17 @@ struct CopyConfirmationBadge: View {
 
     var body: some View {
         if show {
-            VStack {
-                Spacer()
-                Text("Copied!")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(.black.opacity(0.8))
-                    .cornerRadius(10)
-                    .accessibilityIdentifier("CopiedToast")
-                Spacer()
-            }
-            .animation(.easeIn, value: show)
-            .transition(.opacity)
+            Text("Copied!")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(.black.opacity(0.8))
+                .cornerRadius(10)
+                .transition(.opacity)
+                .accessibilityIdentifier("CopiedToast")
+                .animation(.easeIn, value: show)
         }
     }
 }

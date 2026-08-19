@@ -193,7 +193,7 @@ struct password_generatorTests {
             useNumbers: true,
             useSymbols: false
         )
-        #expect(password.allSatisfy { !$0.isSymbol || !symbols.contains($0) })
+        #expect(!password.contains { symbols.contains($0) })
     }
 
     @Test func threeTypesExcludingLowercase() {
