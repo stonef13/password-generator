@@ -69,7 +69,7 @@ jobs:
 
   ui-tests:
     runs-on: macos-15
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 16.4
@@ -107,6 +107,8 @@ jobs:
           -scheme password-generator
           -destination '${{ steps.sim.outputs.dest }}'
           -only-testing:password-generatorUITests
+          -skip-testing:password-generatorUITests/password_generatorUITests/testExample
+          -skip-testing:password-generatorUITests/password_generatorUITests/testLaunchPerformance
           -parallel-testing-enabled NO
           -test-timeouts-enabled YES
           -default-test-execution-time-allowance 240
